@@ -1,0 +1,191 @@
+<!doctype html />
+<html lang="es">
+	<head>
+	<meta charset="UTF-8" />
+	<meta name="author" content="Carlos Grasa" />
+	<title>Búsqueda con profundidad progresiva</title>
+	<script type="text/javascript">
+var campoEstadoInicial; // interfaz para estado
+var campoLimiteInicial; // interfaz para limite
+var campoFormulaLimite; // interfaz para formulaLimite
+var campoUltimoEsGanador; // interfaz para ultimoEsGanador
+var campoProfundidadTope; // interfaz para profundidadTope
+var campoProfundidadEsProgresiva; // var interfaz para profundidadEsProgresiva
+var botonBuscar; // interfaz para botón buscar
+var campoResultado; // interfaz para resultado
+
+var estado; // estado inicial de juego
+var limite; // límite inicial de jugada
+var formulaLimite; // fórmula para calcular límite de jugada
+var ultimoEsGanador; // gana o no el último jugador
+var profundidadEsProgresiva; // es o no progresiva la profundidad
+var calcularLimite; // función para calcular límite actual según la jugada anterior n
+var nivel; // en cuál nivel actualmente
+var profundidad; // máximo nivel alcanzado
+var numNodos; // número de nodos evaluados
+var profundidadTope; // limitación de niveles
+var topeActual; // tope actual de niveles
+var tiempo; // instante registrado
+
+addEventListener("load",iniciarInterfaz,false);
+
+function iniciarInterfaz() {
+	campoEstadoInicial=document.getElementById("estadoinicial");
+	campoLimiteInicial=document.getElementById("limiteinicial");
+	campoFormulaLimite=document.getElementById("formulalimite");
+	campoUltimoEsGanador=document.getElementById("ultimoesganador");
+		campoProfundidadEsProgresiva=document.getElementById("profundidadesprogresiva");
+	campoProfundidadTope=document.getElementById("profundidadtope");
+	botonBuscar=document.getElementById("botonbuscar");
+	campoResultado=document.getElementById("resultado");
+
+	botonBuscar.addEventListener("click",entrarDatos,false);
+	return;
+}
+
+function entrarDatos() {
+	campoResultado.innerHTML="";
+	estado=campoEstadoInicial.value*1;
+	if (!isFinite(estado) || estado<1 || Math.floor(estado)<estado) {
+		informar("Error en estado inicial.");
+		return;
+	}
+	limite=campoLimiteInicial.value*1;
+	if (!isFinite(limite) || limite<1 || Math.floor(limite)<limite || limite>estado) {
+		informar("Error en límite inicial.");
+		return;
+	}
+	formulaLimite=campoFormulaLimite.value;
+	calcularLimite=new Function("estado","n","var limite="+formulaLimite+"; return limite>estado ? estado : limite;");
+	var prueba=calcularLimite(1000000000,1);
+	if (!isFinite(prueba) || prueba<1 || Math.floor(prueba)<prueba) {
+		informar("Error en cálculo de límite.");
+		return;
+	}
+	ultimoEsGanador=campoUltimoEsGanador.value=="ultimoesganador";
+	profundidadTope=campoProfundidadTope.value*1;
+	if (!isFinite(profundidadTope) || profundidadTope<1 || Math.floor(profundidadTope)<profundidadTope) {
+		informar("Error en profundidad tope.");
+		return;
+	}
+	profundidadEsProgresiva=campoProfundidadEsProgresiva.value=="profundidadesprogresiva";
+	informar("Estado: "+estado+", límite: "+limite+(ultimoEsGanador ? ", ganando" : ", perdiendo")+" quien juega último, profundidad "+(profundidadEsProgresiva ? "" : "no")+" progresiva tope: "+profundidadTope+", fórmula: f(n)="+formulaLimite+"<br />Buscando jugadas ganadoras...<br />");
+
+	buscarSoluciones();
+
+  informar("<br /><br />Evaluados "+resumir(numNodos)+" nodos en "+(duracion=lapso())+" ms.");
+  informar("<br />Velocidad de proceso: "+resumir(numNodos/duracion*1000)+" nodos/segundo.");
+	return;
+}
+
+function informar(dato) {
+	campoResultado.innerHTML+=dato;
+	return;
+}
+
+function resumir(x) {
+	var n=Math.floor(Math.log(x)/Math.LN10/3);
+	var y=new Number(x/Math.pow(10,3*n)).toFixed(1);
+	switch (n) {
+		case 0: return y; break;
+		case 1: return y+" K"; break;
+		case 2: return y+" M"; break;
+		case 3: return y+" G"; break;
+		case 4: return y+" T"; break;
+		case 5: return y+" P"; break;
+		default: return x;
+	}
+}
+
+function lapso() {
+	var ahora=new Date();
+	var ms=ahora-tiempo;
+	tiempo=ahora;
+	return ms;
+}
+
+function evaluarNodo(estado,limite) {
+	numNodos++;
+	if (nivel>topeActual)
+	  return nivel%2==0;
+	if (ultimoEsGanador) {
+		if (estado==0)
+			return false;
+		else if (limite>=estado)
+			return true;
+	} else {
+		if (estado==0)
+			return true;
+		else if (estado==1)
+			return false;
+		else if (limite+1>=estado)
+			return true;
+	}
+	for (var j=1;j<=limite;j++) {
+		nivel++;
+		if (nivel>profundidad)
+		  profundidad=nivel;
+		if (!evaluarNodo(estado-j,calcularLimite(estado-j,j))) {
+			nivel--;
+			return true;
+		} else
+	    nivel--;
+  }
+	return false;
+}
+
+function buscarSoluciones() {
+	lapso();
+	numNodos=0;
+	for (var n=1;n<=limite;n++)
+	  for (topeActual=profundidadEsProgresiva ? 1 : profundidadTope;topeActual<=profundidadTope;topeActual++) {
+      nivel=0;
+	    profundidad=0;
+		  if (!evaluarNodo(estado-n,calcularLimite(estado-n,n))) {
+			  informar("<br />Jugar "+n+", con "+profundidad+" niveles de profundidad.");
+			  break;
+			}
+	  }
+	return;
+}
+	</script>
+	</head>
+	<body style="background-color: #FFF0E0;">
+		<h3>Búsqueda recursiva con profundidad progresiva</h3>
+		<hr />
+		<label>Estado inicial:</label>
+		<input id="estadoinicial" type="text" size="15" value="" />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<label>Jugada máxima inicial:</label>
+		<input id="limiteinicial" type="text" size="15" value="" />
+		<br /><br />
+		<label>Cálculo de jugada máxima según precedente (n):</label>
+		<input id="formulalimite" type="text" size="80" value="" />
+		<br /><br />
+		<label>Quién gana:</label>
+		<select id="ultimoesganador">
+			<option value="ultimoesganador">Gana último en jugar</option>
+			<option value="ultimoesperdedor">Pierde último en jugar</option>
+		</select>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<label>Cómo buscar:</label>
+		<select id="profundidadesprogresiva">
+			<option value="profundidadesprogresiva">Búsqueda con profundidad progresiva</option>
+			<option value="primeroenprofundidad">Búsqueda con primero en profundidad</option>
+		</select>
+		<br /><br />
+		<label>Profundidad tope:</label>
+		<input id="profundidadtope" type="text" size="15" value="" />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input id="botonbuscar" type="button" value="Buscar jugadas" />
+		<hr />
+		<label>Resultado:</label>
+		<br /><br />
+		<span id="resultado">
+		</span>
+		<hr />
+		<h6 style="text-align: right; color: #D0D0D0;">
+			&copy; Carlos Grasa Lambea
+		</h6>
+	</body>
+</html>
