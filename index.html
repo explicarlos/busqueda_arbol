@@ -1,0 +1,51 @@
+<!doctype html />
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="author" content="Carlos Grasa" />
+		<title>Búsqueda iterativa con profundidad progresiva</title>
+		<script type="text/javascript" src="control.js">
+			// Debe activarse javascript //
+		</script>
+	</head>
+	<body style="font-family: sans-serif; background-color: cornsilk;">
+		<h3 style="text-align: center">
+    	Búsqueda recursiva concurrente con profundidad progresiva
+    </h3>
+		<hr />
+		<label>Estado inicial:</label>
+		<input id="cuantoinicial" type="text" size="15" value="" />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<label>Jugada máxima inicial:</label>
+		<input id="limiteinicial" type="text" size="15" value="" />
+		<br /><br />
+		<label>Cálculo de jugada máxima según precedente (n):</label>
+		<input id="formulalimite" type="text" size="80" value="" />
+		<br /><br />
+		<label>Quién gana:</label>
+		<select id="ultimoesganador">
+			<option value="ultimoesganador">Gana último en jugar</option>
+			<option value="ultimoesperdedor">Pierde último en jugar</option>
+		</select>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<label>Cómo buscar:</label>
+		<select id="profundidadesprogresiva">
+			<option value="profundidadesprogresiva">Búsqueda con profundidad progresiva</option>
+			<option value="primeroenprofundidad">Búsqueda con primero en profundidad</option>
+		</select>
+		<br /><br />
+		<label>Límite de profundidad:</label>
+		<input id="profundidadarbol" type="text" size="15" value="" />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input id="botonbuscar" type="button" value="Buscar jugadas" />
+		<hr />
+		<label>Resultado:</label>
+		<br /><br />
+		<span id="resultado">
+		</span>
+		<hr />
+                <section style="text-align: right; font-family: sans-serif; font-size: small; font-style: italic; font-weight: bold; color: orange;">
+                    &copy; Carlos Grasa Lambea
+		</section>
+	</body>
+</html>
