@@ -8,7 +8,6 @@ public class Montyculo { // Análisis de jugadas en árbol alternado (minimax)
     }
 
     // campos -------------------------------------------------------------
-    private String campoResultado; // informe de resultados
     private int cuantoInicial; // estado inicial del tablero de juego
     private int jugadaLimite; // límite inicial de jugada
     private int formulaLimiteLineal; // coeficiente lineal del cálculo de jugada límite
@@ -42,8 +41,7 @@ public class Montyculo { // Análisis de jugadas en árbol alternado (minimax)
     // métodos ----------------------------------------------------------------
     public void controlar() { // programa ejecutor de la app
         entrarDatos();
-
-
+        buscarSoluciones();
         return;
     }
     public void entrarDatos() { // pide los datos del juego para la búsqueda
@@ -83,12 +81,21 @@ public class Montyculo { // Análisis de jugadas en árbol alternado (minimax)
         K.limpiarConsola();
         K.escribir("------------------------------------------------------------------------------------------\n");
         K.escribir("                 Análisis de jugadas para el juego del montón\n");
+        K.escribir("                 Estado inicial para la búsqueda de soluciones\n");
         K.escribir("------------------------------------------------------------------------------------------\n");
-        K.escribir("Estado inicial para la búsqueda de soluciones\n");
-        K.escribir("                         - tamaño del montón:      "+cuantoInicial+" puntos\n");
-        K.escribir("                     - jugada máxima inicial:      retirar "+jugadaLimite+" puntos\n");
-        K.escribir("- máxima jugada, según jugada precedente 'n':      ( "+formulaLimiteLineal+" * n + "+formulaLimiteConstante+" ) puntos\n");
-        K.escribir("            - profundidad máxima de búsqueda:      "+profundidadArbol+" niveles\n");
+        K.escribir("                  - tamaño del montón:      "+cuantoInicial+" puntos\n");
+        K.escribir("              - jugada máxima inicial:      retirar "+jugadaLimite+" puntos\n");
+        K.escribir("- máxima jugada, según precedente 'n':      retirar ");
+        if (formulaLimiteLineal>0) {
+            K.escribir(formulaLimiteLineal + "*n");
+            if (formulaLimiteConstante>0)
+                K.escribir("+"+formulaLimiteConstante);
+        } else
+            K.escribir(""+formulaLimiteConstante);
+        K.escribir(" puntos\n");
+        K.escribir("              - ganador de la partida:      quien "+(esGanadorUltimo ? "" : "no ")+"juegue último\n");
+        K.escribir("          - estrategia de exploración:      primero en "+(esProfundidadProgresiva ? "anchura" : "profundidad")+"\n");
+        K.escribir("  - profundidad máxima de exploración:      "+profundidadArbol+" niveles\n");
         K.escribir("------------------------------------------------------------------------------------------\n");
         K.escribir("A continuación se iniciará la exploración de soluciones.\n");
         K.pausarConsola();
@@ -116,4 +123,53 @@ public class Montyculo { // Análisis de jugadas en árbol alternado (minimax)
         instante=System.currentTimeMillis();
         return instante-antes;
     }
+    public boolean evaluarNodo(int cuanto, int limite) { // decide si un nodo es o no ganador, cuanto: situación actual, limite: jugada límite
+        nivel++;
+        totalNodos++;
+        if (nivel > profundidadRecor)
+            profundidadRecor = nivel;
+        if (cuanto == (esGanadorUltimo ? 1 : 0) || limite + (esGanadorUltimo ? 0 : 1) >= cuanto)
+            return false;
+        if (nivel >= profundidadActual)
+            return nivel % 2 == 0;
+        for (int n = 1; n <= limite; n++)
+            if (evaluarNodo(cuanto - n, calcularLimite(cuanto - n, n)))
+                return false;
+        nivel--;
+        return true;
+    }
+    public void buscarSoluciones() {
+        long duracion;
+        boolean evaluacion=false;
+        K.escribir("------------------------------------------------------------------------------------------\n");
+        K.escribir("Analizando posibles jugadas...\n");
+        for (var n = 1; n <= jugadaLimite; n++) {
+            totalNodos = 0;
+            registrarLapso();
+            for (profundidadActual = esProfundidadProgresiva ? 1 : profundidadArbol; profundidadActual <= profundidadArbol; profundidadActual++) {
+                nivel = 0;
+                profundidadRecor = 0;
+                evaluacion = evaluarNodo(cuantoInicial - n, calcularLimite(cuantoInicial-n,n));
+                if (evaluacion) {
+                    duracion = registrarLapso();
+                    K.escribir("- Encontrada jugada  GANADORA: tomar " + n+" puntos");
+                    K.escribir(", profundidad: " + profundidadRecor + " nivel" + (profundidadRecor == 1 ? "" : "es"));
+                    K.escribir(", " + resumirPrefifos(totalNodos) + " nodos en " + duracion + " ms");
+                    K.escribir(duracion > 0 ? (", velocidad: " + resumirPrefifos((long) (1000.0*totalNodos / duracion)) + "nodos/segundo.\n") : ".\n");
+                    break;
+                }
+            }
+            if (!evaluacion) {
+                duracion = registrarLapso();
+                K.escribir("- Encontrada jugada PERDEDORA: tomar " + n+" puntos");
+                K.escribir(", profundidad: " + profundidadRecor + " nivel" + (profundidadRecor == 1 ? "" : "es"));
+                K.escribir(", " + resumirPrefifos(totalNodos) + " nodos en " + duracion + " ms");
+                K.escribir(duracion > 0 ? (", velocidad: " + resumirPrefifos((long) (1000.0*totalNodos / duracion)) + "nodos/segundo.\n") : ".\n");
+            }
+        }
+        K.escribir("------------------------------------------------------------------------------------------\n");
+        K.escribir("\n- Terminada la búsqueda de jugadas.\n");
+        return;
+    }
+
 }
