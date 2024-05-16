@@ -40,14 +40,17 @@ public class Montyculo { // Análisis de jugadas en árbol alternado (minimax)
 
     // métodos ----------------------------------------------------------------
     public void controlar() { // programa ejecutor de la app
-        entrarDatos();
-        buscarSoluciones();
+        do {
+            entrarDatos();
+            buscarSoluciones();
+        } while (K.preguntarChar("¿Desea realizar otro análisis?", "sn")=='s');
         return;
     }
     public void entrarDatos() { // pide los datos del juego para la búsqueda
         K.limpiarConsola();
         K.escribir("------------------------------------------------------------------------------------------\n");
         K.escribir("                 Análisis de jugadas para el juego del montón\n");
+        K.escribir("                             Introducción de datos\n");
         K.escribir("------------------------------------------------------------------------------------------\n");
         K.escribir("Descripción del juego:\n");
         K.escribir("Hay un montón que contiene un número inicial de puntos.\n");
@@ -97,7 +100,7 @@ public class Montyculo { // Análisis de jugadas en árbol alternado (minimax)
         K.escribir("          - estrategia de exploración:      primero en "+(esProfundidadProgresiva ? "anchura" : "profundidad")+"\n");
         K.escribir("  - profundidad máxima de exploración:      "+profundidadArbol+" niveles\n");
         K.escribir("------------------------------------------------------------------------------------------\n");
-        K.escribir("A continuación se iniciará la exploración de soluciones.\n");
+        K.escribir("A continuación se iniciará la exploración de soluciones. ");
         K.pausarConsola();
         return;
     }
@@ -145,6 +148,8 @@ public class Montyculo { // Análisis de jugadas en árbol alternado (minimax)
         K.escribir("Analizando posibles jugadas...\n");
         for (var n = 1; n <= jugadaLimite; n++) {
             totalNodos = 0;
+            profundidadRecor=0;
+            nivel=0;
             registrarLapso();
             for (profundidadActual = esProfundidadProgresiva ? 1 : profundidadArbol; profundidadActual <= profundidadArbol; profundidadActual++) {
                 nivel = 0;
@@ -168,7 +173,7 @@ public class Montyculo { // Análisis de jugadas en árbol alternado (minimax)
             }
         }
         K.escribir("------------------------------------------------------------------------------------------\n");
-        K.escribir("\n- Terminada la búsqueda de jugadas.\n");
+        K.escribir("- Terminada la búsqueda de jugadas. ");
         return;
     }
 
